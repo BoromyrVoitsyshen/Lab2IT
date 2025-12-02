@@ -10,7 +10,17 @@ import { useAuth } from './context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
     const { user, loading } = useAuth();
-    if (loading) return <div>Loading...</div>;
+    if (loading) {
+        return (
+            <div className="flex min-h-screen w-full items-center justify-center bg-background-light dark:bg-background-dark font-display">
+                <div className="rounded-lg bg-white/80 dark:bg-slate-900/80 px-6 py-4 shadow-lg shadow-slate-900/10 dark:shadow-black/40">
+                    <p className="text-sm text-slate-700 dark:text-slate-200">
+                        Checking your session, please wait...
+                    </p>
+                </div>
+            </div>
+        );
+    }
     if (!user) {
         return <Navigate to="/auth" replace />;
     }

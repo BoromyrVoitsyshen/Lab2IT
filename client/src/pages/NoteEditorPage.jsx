@@ -13,6 +13,7 @@ const NoteEditorPage = () => {
     const [files, setFiles] = useState([]);
     const [loading, setLoading] = useState(!isNew);
     const [saving, setSaving] = useState(false);
+    const [saveStatus, setSaveStatus] = useState(isNew ? 'Not saved yet' : 'All changes saved');
     const [shareEmail, setShareEmail] = useState('');
     const [showShareDialog, setShowShareDialog] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
@@ -43,6 +44,9 @@ const NoteEditorPage = () => {
             if (error.response?.status === 404) navigate('/');
         } finally {
             setLoading(false);
+            if (!isNew) {
+                setSaveStatus('All changes saved');
+            }
         }
     };
 
@@ -68,6 +72,7 @@ const NoteEditorPage = () => {
     const handleSave = async () => {
         if (!title.trim()) return alert('Title is required');
         setSaving(true);
+        setSaveStatus('Saving...');
         try {
             if (isNew) {
                 console.log('Creating new note with is_public:', isPublic, typeof isPublic);
@@ -82,13 +87,14 @@ const NoteEditorPage = () => {
                 console.log('Server response:', res.data);
                 // Перезагружаем заметку после сохранения, чтобы убедиться, что состояние синхронизировано
                 await fetchNote();
-                alert('Saved successfully');
+                setSaveStatus('All changes saved');
             }
         } catch (error) {
             console.error('Error saving note:', error);
             console.error('Error response:', error.response?.data);
             console.error('Error status:', error.response?.status);
             alert('Failed to save: ' + (error.response?.data?.message || error.message));
+            setSaveStatus('Failed to save changes');
         } finally {
             setSaving(false);
         }
@@ -182,7 +188,9 @@ const NoteEditorPage = () => {
                     {/* ToolBar */}
                     <header className="flex justify-between items-center gap-2 mb-6">
                         <div className="flex items-center gap-2">
-                            <p className="text-sm text-slate-500 dark:text-slate-400">All changes saved</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                                {saving ? 'Saving…' : saveStatus}
+                            </p>
                         </div>
                         <div className="flex gap-2">
                             <button onClick={() => setShowShareDialog(!showShareDialog)} className="p-2 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800" title="Share">

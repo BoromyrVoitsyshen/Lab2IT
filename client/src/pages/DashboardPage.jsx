@@ -5,6 +5,7 @@ import axios from 'axios';
 const DashboardPage = ({ filter }) => {
     const [notes, setNotes] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         fetchNotes();
@@ -12,11 +13,13 @@ const DashboardPage = ({ filter }) => {
 
     const fetchNotes = async () => {
         setLoading(true);
+        setError('');
         try {
             const res = await axios.get(`/api/notes?filter=${filter}`);
             setNotes(res.data);
         } catch (error) {
             console.error('Error fetching notes:', error);
+            setError('Failed to load notes. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -78,6 +81,11 @@ const DashboardPage = ({ filter }) => {
 
             {/* Table */}
             <div className="w-full @container">
+                {error && (
+                    <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200">
+                        {error}
+                    </div>
+                )}
                 <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
                     <table className="w-full">
                         <thead className="bg-slate-50 dark:bg-slate-800/50">
@@ -90,11 +98,11 @@ const DashboardPage = ({ filter }) => {
                         <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="3" className="px-6 py-4 text-center text-slate-500">Loading...</td>
+                                    <td colSpan={3} className="px-6 py-4 text-center text-slate-500">Loading...</td>
                                 </tr>
                             ) : notes.length === 0 ? (
                                 <tr>
-                                    <td colSpan="3" className="px-6 py-4 text-center text-slate-500">No notes found.</td>
+                                    <td colSpan={3} className="px-6 py-4 text-center text-slate-500">No notes found.</td>
                                 </tr>
                             ) : (
                                 notes.map(note => (

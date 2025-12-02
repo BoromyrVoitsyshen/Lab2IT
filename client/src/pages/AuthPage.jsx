@@ -7,6 +7,8 @@ const AuthPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
     const { login, register } = useAuth();
     const navigate = useNavigate();
@@ -14,29 +16,38 @@ const AuthPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setIsSubmitting(true);
 
-        if (isLogin) {
-            const res = await login(email, password);
-            if (res.success) {
-                navigate('/');
-            } else {
-                setError(res.message);
-            }
-        } else {
-            const res = await register(username, email, password);
-            if (res.success) {
-                const loginRes = await login(email, password);
-                if (loginRes.success) {
+        try {
+            if (isLogin) {
+                const res = await login(email, password);
+                if (res.success) {
                     navigate('/');
                 } else {
-                    setIsLogin(true);
-                    setError('Registration successful. Please login.');
+                    setError(res.message);
                 }
             } else {
-                setError(res.message);
+                const res = await register(username, email, password);
+                if (res.success) {
+                    const loginRes = await login(email, password);
+                    if (loginRes.success) {
+                        navigate('/');
+                    } else {
+                        setIsLogin(true);
+                        setError('Registration successful. Please login.');
+                    }
+                } else {
+                    setError(res.message);
+                }
             }
+        } finally {
+            setIsSubmitting(false);
         }
     };
+
+    const primaryButtonLabel = isSubmitting
+        ? (isLogin ? 'Logging in...' : 'Creating account...')
+        : (isLogin ? 'Login' : 'Create Account');
 
     return (
         <div className="relative flex min-h-screen w-full flex-col items-center justify-center bg-background-light dark:bg-background-dark p-4 font-display">
@@ -108,24 +119,41 @@ const AuthPage = () => {
                             <input
                                 className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-l-lg text-[#0d141b] dark:text-white dark:placeholder:text-slate-400 focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:border-primary dark:focus:border-primary h-14 placeholder:text-[#4c739a] p-[15px] border-r-0 pr-2 text-base font-normal leading-normal"
                                 placeholder="Password"
-                                type="password"
+                                type={showPassword ? 'text' : 'password'}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                             />
-                            <div className="flex cursor-pointer items-center justify-center rounded-r-lg border border-l-0 border-[#cfdbe7] dark:border-slate-700 bg-slate-50 dark:bg-slate-800 pr-[15px] text-[#4c739a] dark:text-slate-400">
-                                <span className="material-symbols-outlined">visibility</span>
-                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword((prev) => !prev)}
+                                className="flex cursor-pointer items-center justify-center rounded-r-lg border border-l-0 border-[#cfdbe7] dark:border-slate-700 bg-slate-50 dark:bg-slate-800 pr-[15px] text-[#4c739a] dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                            >
+                                <span className="material-symbols-outlined">
+                                    {showPassword ? 'visibility_off' : 'visibility'}
+                                </span>
+                            </button>
                         </div>
                     </label>
 
                     {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
-                    <p className="text-[#4c739a] dark:text-slate-400 hover:text-primary dark:hover:text-primary cursor-pointer text-sm font-normal leading-normal self-start underline">Forgot password?</p>
+                    <button
+                        type="button"
+                        onClick={() => alert('Password reset is not implemented yet.')}
+                        className="text-[#4c739a] dark:text-slate-400 hover:text-primary dark:hover:text-primary cursor-pointer text-sm font-normal leading-normal self-start underline text-left"
+                    >
+                        Forgot password?
+                    </button>
 
                     {/* Primary Button */}
-                    <button className="flex h-14 w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-base font-bold text-white shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50">
-                        <span>{isLogin ? 'Login' : 'Create Account'}</span>
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="flex h-14 w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-base font-bold text-white shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <span>{primaryButtonLabel}</span>
                     </button>
                 </form>
 
@@ -137,7 +165,11 @@ const AuthPage = () => {
                         <hr className="w-full border-slate-200 dark:border-slate-700" />
                     </div>
                     <div className="flex w-full flex-col gap-3 sm:flex-row">
-                        <button className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700">
+                        <button
+                            type="button"
+                            onClick={() => alert('Google login is not implemented yet. Please use email and password.')}
+                            className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700"
+                        >
                             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M21.35 11.1H12.18V13.83H18.68C18.43 15.63 17.52 17.1 16.21 17.98V20.18H18.63C20.32 18.65 21.35 16.14 21.35 13.08C21.35 12.39 21.35 11.73 21.35 11.1Z" fill="#4285F4"></path>
                                 <path d="M12.18 21.98C15.02 21.98 17.42 21.03 19.01 19.45L16.6 17.35C15.68 18.01 14.36 18.48 12.18 18.48C9.57 18.48 7.33 16.71 6.54 14.29H3.96V16.5C5.55 19.68 8.61 21.98 12.18 21.98Z" fill="#34A853"></path>
@@ -146,7 +178,11 @@ const AuthPage = () => {
                             </svg>
                             <span>Google</span>
                         </button>
-                        <button className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700">
+                        <button
+                            type="button"
+                            onClick={() => alert('Apple login is not implemented yet. Please use email and password.')}
+                            className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700"
+                        >
                             <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M17.252 12.016C17.252 11.23 17.33 10.51 17.45 9.84H12.13V12.9H15.9C15.71 13.88 15.12 14.93 14.12 15.64V17.55H16.03C17.02 16.57 17.55 15.08 17.89 13.43C17.48 12.98 17.252 12.44 17.252 12.016ZM12.12 18.001C10.51 18.001 9.07 17.43 8.01 16.31L6.1 17.55C7.43 18.91 9.4 20 12.12 20C14.88 20 17.15 18.82 18.42 16.9L16.48 15.64C15.69 16.14 14.61 17.07 12.93 17.44C13.11 17.65 13.06 17.85 12.12 18.001Z" fill="#000"></path>
                                 <path d="M20.24 12.83C20.24 12.15 19.59 11.64 18.88 11.64C18.17 11.64 17.55 12.15 17.55 12.83C17.55 13.51 18.17 14.02 18.88 14.02C19.59 14.02 20.24 13.51 20.24 12.83Z" fill="#000"></path>
