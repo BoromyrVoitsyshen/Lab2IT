@@ -1,0 +1,33 @@
+# --- Dependencies ---
+node_modules/
+package-lock.json
+yarn.lock
+
+# --- Environment Variables ---
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# --- Build Outputs (Папки сборки) ---
+dist/
+build/
+
+# --- Server Specific ---
+server/uploads/*
+!server/uploads/.gitkeep
+
+# --- Logs ---
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs
+*.log
+
+# --- OS & Editors ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
