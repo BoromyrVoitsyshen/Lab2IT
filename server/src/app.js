@@ -45,6 +45,12 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Something went wrong!', error: err.message });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+// Експортуємо app для тестів
+module.exports = app;
+
+// Запускаємо сервер ТІЛЬКИ якщо файл запускається напряму, а не імпортується тестами
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+}
