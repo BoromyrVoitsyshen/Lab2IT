@@ -9,16 +9,6 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        const storedUser = localStorage.getItem('user');
-        if (token && storedUser) {
-            setUser(JSON.parse(storedUser));
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        }
-        setLoading(false);
-    }, []);
-
     const login = async (email, password) => {
         try {
             const res = await axios.post('/api/auth/login', { email, password });
@@ -38,7 +28,11 @@ export const AuthProvider = ({ children }) => {
             await axios.post('/api/auth/register', { username, email, password });
             return { success: true };
         } catch (error) {
-            return { success: false, message: error.response?.data?.message || 'Registration failed' };
+            return {
+                success: false,
+                message: error.response?.data?.message || 'Registration failed',
+                errors: error.response?.data?.errors
+            };
         }
     };
 
@@ -48,6 +42,31 @@ export const AuthProvider = ({ children }) => {
         delete axios.defaults.headers.common['Authorization'];
         setUser(null);
     };
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const storedUser = localStorage.getItem('user');
+        if (token && storedUser) {
+            setUser(JSON.parse(storedUser));
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        }
+        setLoading(false);
+
+        // Add interceptor to handle token expiration
+        const interceptor = axios.interceptors.response.use(
+            (response) => response,
+            (error) => {
+                if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+                    logout();
+                }
+                return Promise.reject(error);
+            }
+        );
+
+        return () => {
+            axios.interceptors.response.eject(interceptor);
+        };
+    }, []);
 
     return (
         <AuthContext.Provider value={{ user, login, register, logout, loading }}>

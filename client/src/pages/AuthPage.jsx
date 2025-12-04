@@ -16,6 +16,12 @@ const AuthPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+
+        if (!isLogin && password.length < 6) {
+            setError('Password must be at least 6 characters long');
+            return;
+        }
+
         setIsSubmitting(true);
 
         try {
@@ -37,7 +43,12 @@ const AuthPage = () => {
                         setError('Registration successful. Please login.');
                     }
                 } else {
-                    setError(res.message);
+                    // Handle validation errors array if present
+                    if (res.errors && Array.isArray(res.errors)) {
+                        setError(res.errors.map(err => err.msg).join('. '));
+                    } else {
+                        setError(res.message);
+                    }
                 }
             }
         } finally {
